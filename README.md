@@ -26,7 +26,7 @@ You need to have a project managed with [Buildozer](http://github.com/kivy/build
 ```
 buildozer init
 ```
-##### Submit your application to bower
+##### Submit your application to Hanga
 ```
 hanga android debug
 ```
