@@ -32,7 +32,7 @@ setup(
         'targeting mobile devices.'),
     keywords=['build', 'android', 'buildozer', 'kivy'],
     install_requires=['requests', 'buildozer', 'progressbar2', 'docopt'],
-    packages=['hanga'],
+    packages=['hanga', 'hanga.scripts'],
     include_package_data=True,
     zip_safe=False,
     platforms='any',
