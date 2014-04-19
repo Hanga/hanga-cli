@@ -1,9 +1,14 @@
 # Hanga
 
-<img align="right" height="300" src="http://hanga.io/static/icon.png"/>
+<img align="right" height="200" src="http://hanga.io/static/icon.png"/>
 
 Build automation for Python applications targeting mobile devices. This is a
 client to [Hanga](https://hanga.io).
+
+Hanga is a building service on the cloud, specialized to build Python applications, as long as your application is manager with [Buildozer](https://github.com/kivy/buildozer). Hanga currently works only for Android, iOS support will come soon, and will also manage the signing with you keystore. Easy to install and setup, get ready in few minutes!
+
+Hanga is currently in closed Beta.
+
 
 ## Installing Hanga
 
