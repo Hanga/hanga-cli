@@ -1,6 +1,6 @@
 # Hanga
 
-<img align="right" height="300" src="http://hanga.io/icon.png"/>
+<img align="right" height="300" src="http://hanga.io/static/icon.png"/>
 
 Build automation for Python applications targeting mobile devices. This is a
 client to [Hanga](https://hanga.io).
