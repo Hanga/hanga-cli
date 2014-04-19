@@ -13,8 +13,8 @@ Hanga is currently in closed Beta.
 ## Installing Hanga
 
 1. Install hanga: `pip install hanga`
-2. Open an account on `https://hanga.io`
-3. Grab your API key at `https://hanga.io/settings`
+2. [Open an account](https://hanga.io)
+3. [Grab your API key](https://hanga.io/settings)
 4. Export the APK key in your environment: `export HANGA_API_KEY=YOUR_API_KEY`
 
 
