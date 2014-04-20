@@ -1,4 +1,4 @@
-### 0.5
+### 0.5 + 0.6
 (April 21st, 2014)
 
 - Windows platform is now supported, using latest Buildozer (0.13).
