@@ -31,7 +31,9 @@ setup(
         'Hanga client - Build automation for Python applications '
         'targeting mobile devices.'),
     keywords=['build', 'android', 'buildozer', 'kivy'],
-    install_requires=['requests', 'buildozer', 'progressbar2', 'docopt'],
+    install_requires=[
+        'requests>=2.2.1', 'buildozer>=0.13',
+        'progressbar2>=2.6.0', 'docopt>=0.6.1'],
     packages=['hanga', 'hanga.scripts'],
     include_package_data=True,
     zip_safe=False,

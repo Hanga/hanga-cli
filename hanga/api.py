@@ -42,13 +42,15 @@ class HangaAPI(object):
             }
 
         """
+        fd = None
         try:
             fd = TrackedFile(filename, callback=callback)
             params = {"args": dumps(args)}
             r = self._build_request(
                 requests.post, "submit", data=fd, params=params, stream=True)
         finally:
-            fd.close()
+            if fd:
+                fd.close()
 
         return r.json()
 
