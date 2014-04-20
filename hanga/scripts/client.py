@@ -28,7 +28,10 @@ from os import walk
 from os.path import join
 from time import sleep
 from buildozer import Buildozer
-from ConfigParser import SafeConfigParser
+try:
+    from configparser import SafeConfigParser
+except ImportError:
+    from ConfigParser import SafeConfigParser
 
 
 class Text(progressbar.Widget):
@@ -108,7 +111,7 @@ class HangaClient(Buildozer):
         config.set('app', 'source.dir', 'app')
 
         try:
-            spec_fd = tempfile.NamedTemporaryFile()
+            spec_fd = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8")
             config.write(spec_fd)
             spec_fd.file.flush()
 

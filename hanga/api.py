@@ -1,27 +1,8 @@
 import requests
+from hanga.utils import TrackedFile
 from json import dumps
-from os import environ, stat
+from os import environ
 from os.path import join
-
-
-class TrackedFile(file):
-    def __init__(self, *args, **kwargs):
-        super(TrackedFile, self).__init__(*args)
-        self._fullsize = None
-        self._callback = kwargs.get("callback")
-
-    def __len__(self):
-        if not self._fullsize:
-            self._fullsize = stat(self.name).st_size
-        return self._fullsize
-
-    def __iter__(self):
-        pass
-
-    def read(self, blocksize=8192):
-        if self._callback:
-            self._callback(self.tell(), len(self))
-        return super(TrackedFile, self).read(blocksize)
 
 
 class HangaException(Exception):
