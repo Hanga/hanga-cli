@@ -24,7 +24,7 @@ import tempfile
 import zipfile
 import progressbar
 from docopt import docopt
-from os import walk
+from os import walk, unlink
 from os.path import join
 from time import sleep
 from buildozer import Buildozer
@@ -32,6 +32,8 @@ try:
     from configparser import SafeConfigParser
 except ImportError:
     from ConfigParser import SafeConfigParser
+
+IS_PY3 = sys.version_info[0] >= 3
 
 
 class Text(progressbar.Widget):
@@ -86,14 +88,14 @@ class HangaClient(Buildozer):
         self.info('Prepare the source code to pack')
         self._copy_application_sources()
         self.info('Compress the application')
+        filename = None
         try:
-            fd = None
-            fd = self.cloud_pack_sources()
+            filename = self.cloud_pack_sources()
             self.info('Submit the application to build')
-            self.cloud_submit(args, fd.name)
+            self.cloud_submit(args, filename)
         finally:
-            if fd:
-                fd.close()
+            if filename:
+                unlink(filename)
         self.info('Done !')
 
     def cloud_pack_sources(self):
@@ -110,12 +112,17 @@ class HangaClient(Buildozer):
         config.read('buildozer.spec')
         config.set('app', 'source.dir', 'app')
 
+        spec_fd = None
         try:
-            spec_fd = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8")
+            encoding = {}
+            if IS_PY3:
+                encoding['encoding'] = ' utf-8'
+            spec_fd = tempfile.NamedTemporaryFile(
+                mode="w", delete=False, **encoding)
             config.write(spec_fd)
-            spec_fd.file.flush()
+            spec_fd.close()
 
-            fd = tempfile.NamedTemporaryFile(suffix='.zip')
+            fd = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
             with zipfile.ZipFile(fd, 'w') as zfile:
                 # add the buildozer definition
                 zfile.write(spec_fd.name, 'buildozer.spec')
@@ -130,10 +137,10 @@ class HangaClient(Buildozer):
                         zfile.write(full_fn, arc_fn)
         finally:
             if spec_fd:
-                spec_fd.close()
+                unlink(spec_fd.name)
 
-        fd.file.flush()
-        return fd
+        fd.close()
+        return fd.name
 
     def cloud_submit(self, args, filename):
         """Submit a job to the cloud builder. It consist of sending the
