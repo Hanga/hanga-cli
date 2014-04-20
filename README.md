@@ -1,15 +1,20 @@
 # Hanga
 
-<img align="right" height="300" src="http://hanga.io/icon.png"/>
+<img align="right" height="200" src="http://hanga.io/static/icon.png"/>
 
 Build automation for Python applications targeting mobile devices. This is a
 client to [Hanga](https://hanga.io).
 
+Hanga is a building service on the cloud, specialized to build Python applications, as long as your application is manager with [Buildozer](https://github.com/kivy/buildozer). Hanga currently works only for Android, iOS support will come soon, and will also manage the signing with you keystore. Easy to install and setup, get ready in few minutes!
+
+Hanga is currently in closed Beta.
+
+
 ## Installing Hanga
 
 1. Install hanga: `pip install hanga`
-2. Open an account on `https://hanga.io`
-3. Grab your API key at `https://hanga.io/settings`
+2. [Open an account](https://hanga.io)
+3. [Grab your API key](https://hanga.io/settings)
 4. Export the APK key in your environment: `export HANGA_API_KEY=YOUR_API_KEY`
 
 
@@ -21,7 +26,7 @@ You need to have a project managed with [Buildozer](http://github.com/kivy/build
 ```
 buildozer init
 ```
-##### Submit your application to bower
+##### Submit your application to Hanga
 ```
 hanga android debug
 ```
