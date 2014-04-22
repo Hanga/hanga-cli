@@ -1,11 +1,11 @@
-# Hanga
+# Hanga Command Line Interface
 
 <img align="right" height="200" src="http://hanga.io/static/icon.png"/>
 
-Build automation for Python applications targeting mobile devices. This is a
-client to [Hanga](https://hanga.io).
+Hanga is a build automation tool for Python applications targeting mobile devices. Hanga-CLI is a
+client for [Hanga](https://hanga.io).
 
-Hanga is a building service on the cloud, specialized to build Python applications, as long as your application is manager with [Buildozer](https://github.com/kivy/buildozer). Hanga currently works only for Android, iOS support will come soon, and will also manage the signing with you keystore. Easy to install and setup, get ready in few minutes!
+Hanga is a build service in the cloud, specialized to build Python applications, as long as your application is managed with [Buildozer](https://github.com/kivy/buildozer). Hanga currently works only for Android - iOS support will come soon - and will also manage signing with your keystore. It is easy to install and setup. You can be ready in a few minutes!
 
 Hanga is currently in closed Beta.
 
@@ -13,9 +13,12 @@ Hanga is currently in closed Beta.
 ## Installing Hanga
 
 1. Install hanga: `pip install hanga`
-2. [Open an account](https://hanga.io)
-3. [Grab your API key](https://hanga.io/settings)
-4. Export the APK key in your environment: `export HANGA_API_KEY=YOUR_API_KEY`
+1. [Open an account](https://hanga.io)
+1. [Grab your API key](https://hanga.io/settings)
+1. Export the APK key to your environment
+    * Linux: `export HANGA_API_KEY=YOUR_API_KEY`
+    * Windows: Edit an environment variable for your user
+    * Or use the --api command line option to specify your key
 
 
 ## Usage
@@ -57,4 +60,4 @@ Downloading [###################################################################
 # Done !
 ```
 
-The build result goes directly in your `bin/` directory.
+The build result goes directly into a `bin/` directory in your project.
