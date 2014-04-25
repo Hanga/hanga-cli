@@ -87,7 +87,7 @@ class HangaAPI(object):
         return filename
 
     def status(self, uuid):
-        """Return the status of a job, in a form of a dictonnary::
+        """Return the status of a job, in a form of a dictionary::
 
             {
                 "result": "ok",
@@ -95,9 +95,9 @@ class HangaAPI(object):
                 "job_progression": "78"
             }
 
-        The `result` can be either "ok" or "error" if something happen.
-        the `job_status` can be lot of things, depending the latest Hanga
-        version running. It ends only with status: "done" or "error".
+        The `result` can be either "OK" or "error" if something happens.
+        The `job_status` can be a lot of things, depending on the Hanga 
+        version running. It ends only with a status of "done" or "error".
         """
         r = self._build_request(requests.get, "{}/status".format(uuid))
         return r.json()

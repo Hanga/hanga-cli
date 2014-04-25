@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Hanga client.
-Submit a app to build for a specific platform.
+Submit an app to build for a specific platform.
 
 Usage:
     hanga [options] android
@@ -10,13 +10,13 @@ Usage:
     hanga --version
 
 Options:
-    -h, --help              Show this screen.
+    -h, --help              Show this screen
     -p NAME --profile NAME  Select a specific profile
-    -v, --verbose           Activate verbose level
+    -v, --verbose           Activate verbose output level
     --api API_KEY           Use a specific API key for submission
     --url URL               Use a specific URL for submission
     --nowait                Don't wait for the build to finish
-    --version               Show the hanga version
+    --version               Show the version of hanga
 """
 
 from __future__ import print_function
@@ -67,10 +67,10 @@ class HangaClient(Buildozer):
             print("")
             print("Error: {}".format(e))
             print("")
-            print("You have 2 way to setup your API Key:")
+            print("You have two ways to setup your API Key:")
             print("")
             print("1. export HANGA_API_KEY=YOUR_API_KEY")
-            print("2. or add '--api YOUR_API_KEY' in your command line")
+            print("2. or add '--api YOUR_API_KEY' to the command line")
             print("")
             print("Get your API key at https://hanga.io/settings")
             print("")
@@ -149,7 +149,7 @@ class HangaClient(Buildozer):
         return fd.name
 
     def cloud_submit(self, args, filename):
-        """Submit a job to the cloud builder. It consist of sending the
+        """Submit a job to the cloud builder. It consists of sending the
         application zip file and the argument used in the command line.
         And then, wait for the build to be done :)
         """
@@ -197,7 +197,7 @@ class HangaClient(Buildozer):
             return
 
         # Part 2, wait.
-        print("Or you can wait the build to finish.")
+        print("Or you can wait for the build to finish.")
         print("It will automatically download the package when done.")
         print("")
 
@@ -251,7 +251,7 @@ class HangaClient(Buildozer):
             if self._pbar:
                 self._pbar.finish()
 
-        self.info("{} available in the bin directory".format(filename))
+        self.info("{} is available in the bin directory".format(filename))
 
     def _get_last_status(self):
         return (self._last_status or "waiting").capitalize()
