@@ -15,10 +15,9 @@ Hanga is currently in closed Beta.
 1. Install hanga: `pip install hanga`
 1. [Open an account](https://hanga.io)
 1. [Grab your API key](https://hanga.io/settings)
-1. Export the APK key to your environment
-    * Linux: `export HANGA_API_KEY=YOUR_API_KEY`
-    * Windows: Edit an environment variable for your user
-    * Or use the --api command line option to specify your key
+1. Save your API key into hanga::
+
+	hanga set apikey YOUR_API_KEY
 
 
 ## Usage
@@ -29,6 +28,7 @@ You need to have a project managed with [Buildozer](http://github.com/kivy/build
 ```
 buildozer init
 ```
+
 ##### Submit your application to Hanga
 ```
 hanga android debug
@@ -61,3 +61,23 @@ Downloading [###################################################################
 ```
 
 The build result goes directly into a `bin/` directory in your project.
+
+##### Importing keys
+By default, any application build with Hanga will be compiled with the default
+Hanga.io development key. If you want to get unsigned build, go to your
+application page, and select "Don't sign the application".
+
+Or you can import your key to Hanga.io from https://hanga.io/settings, or using
+the command line:
+```
+$ hanga importkey ~/code/keys/myapp.keystore
+Importing <myapp.keystore> to Hanga.io
+
+Keystore password:
+Key/alias name: my_alias
+Key password (let empty to use the keystore password):
+Give a name to Hanga for identify this key: Android key
+
+Thanks you, we are adding your key...
+... Done!
+```
