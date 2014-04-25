@@ -1,8 +1,13 @@
 import requests
 from hanga.utils import TrackedFile
+from hanga import appdirs
 from json import dumps
-from os import environ
+from os import environ, makedirs
 from os.path import join, exists
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 
 
 class HangaException(Exception):
@@ -14,12 +19,24 @@ class HangaAPI(object):
 
     def __init__(self, key=None, url=None):
         super(HangaAPI, self).__init__()
-        self._url = url or environ.get("HANGA_URL", "https://hanga.io")
-        self._key = key or environ.get("HANGA_API_KEY")
-        if not self._key:
-            raise HangaException("Missing Hanga API Key")
-        if not self._url.endswith("/"):
-            self._url += "/"
+        self.read_configuration()
+        c = self.config
+
+        # possible url location (in order of importance)
+        urls = (url,
+                environ.get("HANGA_URL"),
+                c.get("auth", "url") if
+                    c.has_option("auth", "url") else None,
+                "https://hanga.io")
+
+        # possible keys location (in order of importance)
+        keys = (key,
+                environ.get("HANGA_API_KEY"),
+                c.get("auth", "apikey") if
+                    c.has_option("auth", "apikey") else None)
+
+        self._url = next((x for x in urls if x))
+        self._key = next((x for x in keys if x), None)
 
     def submit(self, args, filename, callback=None):
         """Submit a packaged app to build. Filename should point on a
@@ -42,6 +59,7 @@ class HangaAPI(object):
             }
 
         """
+        self.ensure_configuration()
         fd = None
         try:
             fd = TrackedFile(filename, callback=callback)
@@ -61,6 +79,7 @@ class HangaAPI(object):
 
         Return the name of the filename in the dest_dir.
         """
+        self.ensure_configuration()
         r = self._build_request(requests.get,
                                 "{}/dl".format(uuid), stream=True)
 
@@ -99,6 +118,7 @@ class HangaAPI(object):
         The `job_status` can be a lot of things, depending on the Hanga 
         version running. It ends only with a status of "done" or "error".
         """
+        self.ensure_configuration()
         r = self._build_request(requests.get, "{}/status".format(uuid))
         return r.json()
 
@@ -137,6 +157,7 @@ class HangaAPI(object):
             assert(infos.get("alias"))
             assert(infos.get("alias_password"))
 
+        self.ensure_configuration()
         fd = None
         try:
             fd = open(infos["keystore"], "rb")
@@ -167,3 +188,39 @@ class HangaAPI(object):
                 msg = "Request error ({})".format(r.status_code)
             raise HangaException(msg)
         return r
+
+    def ensure_configuration(self):
+        """
+        Validate that the configuration is ok to call any API commands
+        """
+        if not self._key:
+            raise HangaException("Missing Hanga API Key")
+        if not self._url.endswith("/"):
+            self._url += "/"
+
+    def read_configuration(self):
+        """
+        Read the configuration file. This is already done by the
+        constructor.
+        """
+        self.config = ConfigParser()
+        self.config.read(self.config_fn)
+        if not self.config.has_section("auth"):
+            self.config.add_section("auth")
+
+    def write_configuration(self):
+        """
+        Write the current configuration to the file
+        """
+        with open(self.config_fn, "w") as fd:
+            self.config.write(fd)
+
+    @property
+    def config_fn(self):
+        if not exists(self.user_config_dir):
+            makedirs(self.user_config_dir)
+        return join(self.user_config_dir, 'hanga.conf')
+
+    @property
+    def user_config_dir(self):
+        return appdirs.user_config_dir('Hanga', 'Melting Rocks')

@@ -6,6 +6,7 @@ Submit an app to build for a specific platform.
 Usage:
     hanga [options] android
     hanga [options] importkey <keystore>
+    hanga set (apikey | url) <value>
     hanga -h | --help
     hanga --version
 
@@ -59,20 +60,24 @@ class HangaClient(Buildozer):
             self.log_level = 2
 
         # create the hanga client
+        self._hangaapi = hanga.HangaAPI(
+            key=arguments.get("--api"),
+            url=arguments.get("--url"))
+
+        if arguments["set"]:
+            self._run_set(arguments)
+            return
+
         try:
-            self._hangaapi = hanga.HangaAPI(
-                key=arguments.get("--api"),
-                url=arguments.get("--url"))
+            self._hangaapi.ensure_configuration()
         except hanga.HangaException as e:
             print("")
             print("Error: {}".format(e))
             print("")
-            print("You have two ways to setup your API Key:")
+            print("To setup your API key:")
             print("")
-            print("1. export HANGA_API_KEY=YOUR_API_KEY")
-            print("2. or add '--api YOUR_API_KEY' to the command line")
-            print("")
-            print("Get your API key at https://hanga.io/settings")
+            print("1. Get the API key at https://hanga.io/settings")
+            print("2. Run: hanga set apikey YOUR_API_KEY")
             print("")
             sys.exit(1)
 
@@ -272,6 +277,28 @@ class HangaClient(Buildozer):
     def _get_last_status(self):
         return (self._last_status or "waiting").capitalize()
 
+    def _run_set(self, arguments):
+        value = arguments.get("<value>")
+        if arguments["apikey"]:
+            key = "apikey"
+            if len(value) != 32:
+                self.error("Invalid API key, it should have 32 characters")
+                sys.exit(1)
+        elif arguments["url"]:
+            key = "url"
+            if not key.startswith("https://"):
+                if key.startswith("http://"):
+                    self.error("Warning: You are using HTTP instead of HTTPS")
+                    self.error(
+                        "Warning: Communication with Hanga will be unsecure")
+                else:
+                    self.error("Invalid protocol in URL (https or http only)")
+        else:
+            assert(0)
+
+        self._hangaapi.config.set("auth", key, value)
+        self._hangaapi.write_configuration()
+        print("Config updated at {}".format(self._hangaapi.config_fn))
 
     def _run_importkey(self, arguments):
         filename = arguments["<keystore>"]
