@@ -26,14 +26,14 @@ class HangaAPI(object):
         urls = (url,
                 environ.get("HANGA_URL"),
                 c.get("auth", "url") if
-                    c.has_option("auth", "url") else None,
+                c.has_option("auth", "url") else None,
                 "https://hanga.io")
 
         # possible keys location (in order of importance)
         keys = (key,
                 environ.get("HANGA_API_KEY"),
                 c.get("auth", "apikey") if
-                    c.has_option("auth", "apikey") else None)
+                c.has_option("auth", "apikey") else None)
 
         self._url = next((x for x in urls if x))
         self._key = next((x for x in keys if x), None)
@@ -115,7 +115,7 @@ class HangaAPI(object):
             }
 
         The `result` can be either "OK" or "error" if something happens.
-        The `job_status` can be a lot of things, depending on the Hanga 
+        The `job_status` can be a lot of things, depending on the Hanga
         version running. It ends only with a status of "done" or "error".
         """
         self.ensure_configuration()
@@ -127,7 +127,8 @@ class HangaAPI(object):
 
         `platform` is one of the supported platform in Hanga. Currently, only
         "android" is considered as valid.
-        Depending of the platform, you will have multiples informations to pass.
+        Depending of the platform, you will have multiples informations to
+        pass.
 
         For android, you'll need `keystore`, `keystore_password`, `alias`,
         `alias_password`.

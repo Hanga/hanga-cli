@@ -343,11 +343,13 @@ class HangaClient(Buildozer):
         print("Thanks you, we are adding your key...")
 
         try:
-            ret = self._hangaapi.importkey("android", title,
-                    keystore=filename,
-                    keystore_password=keystore_password,
-                    alias=alias,
-                    alias_password=alias_password)
+            ret = self._hangaapi.importkey(
+                "android",
+                title,
+                keystore=filename,
+                keystore_password=keystore_password,
+                alias=alias,
+                alias_password=alias_password)
         except hanga.HangaException as e:
             print("")
             print("Error: {}".format(e))

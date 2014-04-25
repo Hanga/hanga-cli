@@ -23,5 +23,3 @@ class TrackedFile(object):
 
     def __getattr__(self, attr):
         return getattr(self._file, attr)
-
-
