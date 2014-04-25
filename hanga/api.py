@@ -2,7 +2,7 @@ import requests
 from hanga.utils import TrackedFile
 from json import dumps
 from os import environ
-from os.path import join
+from os.path import join, exists
 
 
 class HangaException(Exception):
@@ -100,6 +100,58 @@ class HangaAPI(object):
         version running. It ends only with status: "done" or "error".
         """
         r = self._build_request(requests.get, "{}/status".format(uuid))
+        return r.json()
+
+    def importkey(self, platform, name, **infos):
+        """Import a key to Hanga. Then you can associate the key to your app.
+
+        `platform` is one of the supported platform in Hanga. Currently, only
+        "android" is considered as valid.
+        Depending of the platform, you will have multiples informations to pass.
+
+        For android, you'll need `keystore`, `keystore_password`, `alias`,
+        `alias_password`.
+
+        The result is a dict that contain::
+
+            {
+                "result": "ok",
+            }
+
+        Or if there is a failure::
+
+            {
+                "result": "error",
+                "details": "Something bad happened"
+            }
+
+        """
+
+        assert(platform == "android")
+        assert(name)
+
+        if platform == "android":
+            assert(infos.get("keystore"))
+            assert(exists(infos.get("keystore")))
+            assert(infos.get("keystore_password"))
+            assert(infos.get("alias"))
+            assert(infos.get("alias_password"))
+
+        fd = None
+        try:
+            fd = open(infos["keystore"], "rb")
+            params = {
+                "platform": platform,
+                "name": name,
+                "keystore-password": infos["keystore_password"],
+                "alias-password": infos["alias_password"],
+                "alias": infos["alias"]}
+            files = {"keystore-file": fd}
+            r = self._build_request(
+                requests.post, "importkey", data=params, files=files)
+        finally:
+            if fd:
+                fd.close()
         return r.json()
 
     def _build_request(self, method, path, **kwargs):

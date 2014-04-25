@@ -4,7 +4,8 @@ Hanga client.
 Submit a app to build for a specific platform.
 
 Usage:
-    hanga [options] android debug
+    hanga [options] android
+    hanga [options] importkey <keystore>
     hanga -h | --help
     hanga --version
 
@@ -18,14 +19,16 @@ Options:
     --version               Show the hanga version
 """
 
-import sys
+from __future__ import print_function
+import getpass
 import hanga
+import progressbar
+import sys
 import tempfile
 import zipfile
-import progressbar
 from docopt import docopt
 from os import walk, unlink
-from os.path import join
+from os.path import join, exists, basename
 from time import sleep
 from buildozer import Buildozer
 try:
@@ -37,7 +40,7 @@ IS_PY3 = sys.version_info[0] >= 3
 
 
 class Text(progressbar.Widget):
-    __slots__ = ('text_callback', )
+    __slots__ = ("text_callback", )
 
     def __init__(self, callback):
         super(Text, self).__init__()
@@ -49,54 +52,57 @@ class Text(progressbar.Widget):
 
 class HangaClient(Buildozer):
     def run_command(self, arguments):
-        args = []
         self.arguments = arguments
-        if 'android' in arguments:
-            args += ['android']
-        if 'debug' in arguments:
-            args += ['debug']
-        if '--profile' in arguments:
-            self.config_profile = arguments['--profile']
-        if '--verbose' in arguments:
+        if "--profile" in arguments:
+            self.config_profile = arguments["--profile"]
+        if "--verbose" in arguments:
             self.log_level = 2
-
-        self._merge_config_profile()
 
         # create the hanga client
         try:
             self._hangaapi = hanga.HangaAPI(
-                key=arguments.get('--api'),
-                url=arguments.get('--url'))
+                key=arguments.get("--api"),
+                url=arguments.get("--url"))
         except hanga.HangaException as e:
-            print('')
-            print('Error: {}'.format(e))
-            print('')
-            print('You have 2 way to setup your API Key:')
-            print('')
-            print('1. export HANGA_API_KEY=YOUR_API_KEY')
-            print('2. or add "--api YOUR_API_KEY" in your command line')
-            print('')
-            print('Get your API key at https://hanga.io/settings')
-            print('')
+            print("")
+            print("Error: {}".format(e))
+            print("")
+            print("You have 2 way to setup your API Key:")
+            print("")
+            print("1. export HANGA_API_KEY=YOUR_API_KEY")
+            print("2. or add '--api YOUR_API_KEY' in your command line")
+            print("")
+            print("Get your API key at https://hanga.io/settings")
+            print("")
             sys.exit(1)
 
+        if arguments["android"]:
+            self._run_android_build(arguments)
+        elif arguments["importkey"]:
+            self._run_importkey(arguments)
+
+    def _run_android_build(self, arguments):
+        args = ["android"]
+
+        self._merge_config_profile()
+
         # fake the target
-        self.targetname = 'hanga'
+        self.targetname = "hanga"
         self.check_build_layout()
 
         # pack the source code and submit it
-        self.info('Prepare the source code to pack')
+        self.info("Prepare the source code to pack")
         self._copy_application_sources()
-        self.info('Compress the application')
+        self.info("Compress the application")
         filename = None
         try:
             filename = self.cloud_pack_sources()
-            self.info('Submit the application to build')
+            self.info("Submit the application to build")
             self.cloud_submit(args, filename)
         finally:
             if filename:
                 unlink(filename)
-        self.info('Done !')
+        self.info("Done !")
 
     def cloud_pack_sources(self):
         """Pack all the application sources and dependencies into a single zip.
@@ -107,31 +113,31 @@ class HangaClient(Buildozer):
         """
 
         # create custom buildozer.spec
-        self.debug('Create custom buildozer.spec')
+        self.debug("Create custom buildozer.spec")
         config = SafeConfigParser()
-        config.read('buildozer.spec')
-        config.set('app', 'source.dir', 'app')
+        config.read("buildozer.spec")
+        config.set("app", "source.dir", "app")
 
         spec_fd = None
         try:
             encoding = {}
             if IS_PY3:
-                encoding['encoding'] = ' utf-8'
+                encoding["encoding"] = " utf-8"
             spec_fd = tempfile.NamedTemporaryFile(
                 mode="w", delete=False, **encoding)
             config.write(spec_fd)
             spec_fd.close()
 
-            fd = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
-            with zipfile.ZipFile(fd, 'w') as zfile:
+            fd = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+            with zipfile.ZipFile(fd, "w") as zfile:
                 # add the buildozer definition
-                zfile.write(spec_fd.name, 'buildozer.spec')
+                zfile.write(spec_fd.name, "buildozer.spec")
 
                 # add the application
                 for root, directory, files in walk(self.app_dir):
                     for fn in files:
                         full_fn = join(root, fn)
-                        arc_fn = 'app{}/{}'.format(
+                        arc_fn = "app{}/{}".format(
                             root[len(self.app_dir):],
                             fn)
                         zfile.write(full_fn, arc_fn)
@@ -148,15 +154,15 @@ class HangaClient(Buildozer):
         And then, wait for the build to be done :)
         """
 
-        self.info('Submitting {}'.format(self.config.get('app', 'title')))
+        self.info("Submitting {}".format(self.config.get("app", "title")))
         self._pbar = None
         result = None
 
         # Part 1 - submit
 
         widgets = [
-            'Upload ', progressbar.Bar(left='[', right=']'),
-            ' ', progressbar.FileTransferSpeed()]
+            "Upload ", progressbar.Bar(left="[", right="]"),
+            " ", progressbar.FileTransferSpeed()]
 
         try:
             def submit_callback(current, length):
@@ -170,66 +176,66 @@ class HangaClient(Buildozer):
             if self._pbar:
                 self._pbar.finish()
 
-        package = '{}.{}'.format(
-            self.config.get('app', 'package.domain'),
-            self.config.get('app', 'package.name'))
+        package = "{}.{}".format(
+            self.config.get("app", "package.domain"),
+            self.config.get("app", "package.name"))
 
-        if result.get('result') == 'ok':
-            uuid = result.get('uuid')
-            print('')
-            print('Build submitted, uuid is {}'.format(uuid))
-            print('You can check the build status at:')
-            print('')
-            print('    https://hanga.io/app/{}'.format(package))
-            print('')
+        if result.get("result") == "ok":
+            uuid = result.get("uuid")
+            print("")
+            print("Build submitted, uuid is {}".format(uuid))
+            print("You can check the build status at:")
+            print("")
+            print("    https://hanga.io/app/{}".format(package))
+            print("")
         else:
-            details = result.get('details')
-            self.error('Submission error: {}'.format(details))
+            details = result.get("details")
+            self.error("Submission error: {}".format(details))
             return
 
-        if self.arguments.get('--nowait'):
+        if self.arguments.get("--nowait"):
             return
 
         # Part 2, wait.
-        print('Or you can wait the build to finish.')
-        print('It will automatically download the package when done.')
-        print('')
+        print("Or you can wait the build to finish.")
+        print("It will automatically download the package when done.")
+        print("")
 
-        status = self._last_status = ''
+        status = self._last_status = ""
         progression = 0
         widgets = [
             Text(self._get_last_status),
-            ' ', progressbar.Bar(left='[', right=']'), ' ',
+            " ", progressbar.Bar(left="[", right="]"), " ",
             progressbar.Timer()]
         self._pbar = progressbar.ProgressBar(widgets=widgets, maxval=100)
         self._pbar.start()
 
         try:
-            while status not in ('done', 'error'):
+            while status not in ("done", "error"):
                 sleep(1)
                 infos = self._hangaapi.status(uuid)
-                if infos.get('result') != 'ok':
+                if infos.get("result") != "ok":
                     return
-                self._last_status = status = infos['job_status']
-                progression = int(infos['job_progression'])
+                self._last_status = status = infos["job_status"]
+                progression = int(infos["job_progression"])
                 self._pbar.update(progression)
         finally:
             self._pbar.finish()
 
         # if the build is broken, don't do anything
-        if status != 'done':
+        if status != "done":
             return
 
         # Part 3: download
         self.api_download(uuid)
 
     def api_download(self, uuid):
-        self.info('Downloading the build result')
+        self.info("Downloading the build result")
 
         self._pbar = None
         widgets = [
-            'Downloading ', progressbar.Bar(left='[', right=']'),
-            ' ', progressbar.FileTransferSpeed()]
+            "Downloading ", progressbar.Bar(left="[", right="]"),
+            " ", progressbar.FileTransferSpeed()]
 
         def download_callback(current, length):
             if self._pbar is None:
@@ -245,10 +251,63 @@ class HangaClient(Buildozer):
             if self._pbar:
                 self._pbar.finish()
 
-        self.info('{} available in the bin directory'.format(filename))
+        self.info("{} available in the bin directory".format(filename))
 
     def _get_last_status(self):
-        return (self._last_status or 'waiting').capitalize()
+        return (self._last_status or "waiting").capitalize()
+
+
+    def _run_importkey(self, arguments):
+        filename = arguments["<keystore>"]
+        print("Importing <{}> to Hanga.io".format(basename(filename)))
+        print("")
+        if not exists(filename):
+            self.error("Unable to find the file {}".format(filename))
+            sys.exit(1)
+
+        keystore_password = ""
+        alias = ""
+        alias_password = ""
+        title = ""
+
+        while not keystore_password:
+            keystore_password = getpass.getpass("Keystore password: ")
+            if keystore_password:
+                break
+            self.error("Error, empty password")
+
+        while not alias:
+            print("Key/alias name: ", end="")
+            alias = raw_input()
+            if alias:
+                break
+            self.error("Error, empty key/alias.")
+
+        alias_password = getpass.getpass(
+            "Key password (let empty to use the keystore password): ")
+        if not alias_password:
+            alias_password = keystore_password
+
+        print("Give a name to Hanga for identify this key: ", end="")
+        while not title:
+            title = raw_input()
+            if title:
+                break
+            self.error("No name, please enter one")
+            print("Name this keystore: ", end="")
+
+        print("")
+        print("Thanks you, we are adding your key...")
+
+        ret = self._hangaapi.importkey("android", title,
+                keystore=filename,
+                keystore_password=keystore_password,
+                alias=alias,
+                alias_password=alias_password)
+        if ret["result"] == "ok":
+            print("... Key added!")
+        else:
+            print("... Error: {}".format(ret["details"]))
 
 
 def main():
@@ -256,8 +315,8 @@ def main():
     try:
         HangaClient().run_command(arguments)
     except KeyboardInterrupt:
-        print('')
+        print("")
         sys.exit(0)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
