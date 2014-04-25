@@ -158,5 +158,12 @@ class HangaAPI(object):
         url = "{}api/1/{}".format(self._url, path)
         headers = {"X-Hanga-Api": self._key}
         r = method(url, headers=headers, **kwargs)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            if r.status_code:
+                msg = "Access denied, invalid HANGA_API_KEY"
+            else:
+                msg = "Request error ({})".format(r.status_code)
+            raise HangaException(msg)
         return r

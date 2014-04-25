@@ -172,6 +172,11 @@ class HangaClient(Buildozer):
                     self._pbar.start()
                 self._pbar.update(current)
             result = self._hangaapi.submit(args, filename, submit_callback)
+        except hanga.HangaException as e:
+            print("")
+            print("Error: {}".format(e))
+            print("")
+            sys.exit(1)
         finally:
             if self._pbar:
                 self._pbar.finish()
@@ -213,7 +218,13 @@ class HangaClient(Buildozer):
         try:
             while status not in ("done", "error"):
                 sleep(1)
-                infos = self._hangaapi.status(uuid)
+                try:
+                    infos = self._hangaapi.status(uuid)
+                except hanga.HangaException as e:
+                    print("")
+                    print("Error: {}".format(e))
+                    print("")
+                    sys.exit(1)
                 if infos.get("result") != "ok":
                     return
                 self._last_status = status = infos["job_status"]
@@ -247,6 +258,11 @@ class HangaClient(Buildozer):
         try:
             filename = self._hangaapi.download(
                 uuid, self.bin_dir, callback=download_callback)
+        except hanga.HangaException as e:
+            print("")
+            print("Error: {}".format(e))
+            print("")
+            sys.exit(1)
         finally:
             if self._pbar:
                 self._pbar.finish()
@@ -299,11 +315,18 @@ class HangaClient(Buildozer):
         print("")
         print("Thanks you, we are adding your key...")
 
-        ret = self._hangaapi.importkey("android", title,
-                keystore=filename,
-                keystore_password=keystore_password,
-                alias=alias,
-                alias_password=alias_password)
+        try:
+            ret = self._hangaapi.importkey("android", title,
+                    keystore=filename,
+                    keystore_password=keystore_password,
+                    alias=alias,
+                    alias_password=alias_password)
+        except hanga.HangaException as e:
+            print("")
+            print("Error: {}".format(e))
+            print("")
+            sys.exit(1)
+
         if ret["result"] == "ok":
             print("... Key added!")
         else:
