@@ -1,5 +1,11 @@
+### 0.7.1
+(April 27th, 2014)
+
+- Fixes installation when no dependencies are available
+
+
 ### 0.7
-(April 25st, 2014)
+(April 25th, 2014)
 
 - Remove "debug" argument in the android command
 - Add "set (apikey | url) <value>" commands to set API key in a configuration file
