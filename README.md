@@ -15,9 +15,7 @@ Hanga is currently in closed Beta.
 1. Install hanga: `pip install hanga`
 1. [Open an account](https://hanga.io)
 1. [Grab your API key](https://hanga.io/settings)
-1. Save your API key into hanga::
-
-	hanga set apikey YOUR_API_KEY
+1. Save your API key into hanga: `hanga set apikey YOUR_API_KEY`
 
 
 ## Usage
